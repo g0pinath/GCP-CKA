@@ -5,13 +5,6 @@ provider "google" {
   zone    = "australia-southeast1-a"
 }
 
-
-resource "google_compute_subnetwork" "vm-hub-provisioner-subnet" {
-  name          = "vm-hub-provisioner-subnet"
-  ip_cidr_range = "10.25.0.0/28"
-  region  = "australia-southeast1"
-  network       = google_compute_network.dev-hub-vpc-k8s.id  
-}
 #spoke subnets
 resource "google_compute_subnetwork" "k8s-nodes-subnet" {
   name          = "k8s-nodes-subnet"
@@ -20,13 +13,7 @@ resource "google_compute_subnetwork" "k8s-nodes-subnet" {
   network       = google_compute_network.dev-spoke-vpc-k8s.id  
 }
 
-
-resource "google_compute_subnetwork" "vm-spoke-provisioner-subnet" {
-  name          = "vm-spoke-provisioner-subnet"
-  ip_cidr_range = "10.30.2.0/28"
-  region  = "australia-southeast1"
-  network       = google_compute_network.dev-spoke-vpc-k8s.id  
-}
+#VPCs
 
 resource "google_compute_network" "dev-hub-vpc-k8s" {
   name                    = "dev-hub-vpc-k8s"
@@ -36,4 +23,26 @@ resource "google_compute_network" "dev-hub-vpc-k8s" {
 resource "google_compute_network" "dev-spoke-vpc-k8s" {
   name                    = "dev-spoke-vpc-k8s"
   auto_create_subnetworks = false
+}
+#NAT Router for VMs without public IP to goto internet.
+
+resource "google_compute_router" "router" {
+  name    = "nat-router-australia-southeast1"
+  network = google_compute_network.dev-spoke-vpc-k8s.id
+
+  bgp {
+    asn = 64514
+  }
+}
+
+resource "google_compute_router_nat" "nat" {
+  name                               = "nat-gateway-australia-southeast1"
+  router                             = google_compute_router.router.name
+  nat_ip_allocate_option             = "AUTO_ONLY"
+  source_subnetwork_ip_ranges_to_nat = "ALL_SUBNETWORKS_ALL_IP_RANGES"
+
+  log_config {
+    enable = true
+    filter = "ERRORS_ONLY"
+  }
 }

@@ -4,6 +4,8 @@
 **/.terraform/**/**/**/**
 Lambda\TF-Infra-Code\.terraform\*
 *.json
+id_rsa
+id_rsa.pub
 svc-core-infra-dev-deploy.json
 # .tfstate files
 *.tfstate
