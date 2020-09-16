@@ -3,7 +3,8 @@
 **/.terraform/**/**/**
 **/.terraform/**/**/**/**
 Lambda\TF-Infra-Code\.terraform\*
-
+*.json
+svc-core-infra-dev-deploy.json
 # .tfstate files
 *.tfstate
 *.tfstate.backup
